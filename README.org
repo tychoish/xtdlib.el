@@ -1,9 +1,24 @@
-#+TITLE: xlib.el
+#+TITLE: xlib.el -- eXtended Emacs Lisp Library
 #+OPTIONS: toc:2 num:nil
 
-* xlib.el
-
+* Overview
 Extensions and additions for [[https://github.com/rejeep/f.el][f.el]], [[https://github.com/magnars/s.el][s.el]], [[https://github.com/Wilfred/ht.el][ht.el]], and [[https://github.com/magnars/dash.el][dash.el]], plus utility macros for hooks, timers, and code ergonomics.
+
+* Contents                                                       :TOC:
+- [[#overview][Overview]]
+- [[#installation][Installation]]
+  - [[#with-package-vc-and-use-package][With =package-vc= and =use-package=]]
+  - [[#manually][Manually]]
+- [[#api-reference][API Reference]]
+  - [[#timing][Timing]]
+  - [[#strings][Strings]]
+  - [[#lists][Lists]]
+  - [[#hash-tables][Hash Tables]]
+  - [[#files][Files]]
+  - [[#options][Options]]
+  - [[#utility-macros][Utility Macros]]
+  - [[#project-context][Project Context]]
+- [[#license][License]]
 
 * Installation
 
