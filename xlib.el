@@ -161,29 +161,30 @@ Use this to guard against blank user input or empty configuration values."
       default
     input))
 
-(defun s-number-word (num)
-  (cond
-   ((eql num 1) "one")
-   ((eql num 2) "two")
-   ((eql num 3) "three")
-   ((eql num 4) "four")
-   ((eql num 5) "five")
-   ((eql num 6) "six")
-   ((eql num 7) "seven")
-   ((eql num 8) "eight")
-   ((eql num 9) "nine")
-   ((eql num 10) "ten")
-   ((eql num 11) "eleven")
-   ((eql num 12) "twelve")
-   ((eql num 13) "thirteen")
-   ((eql num 14) "fourteen")
-   ((eql num 15) "fifteen")
-   ((eql num 16) "sixteen")
-   ((eql num 17) "seventeen")
-   ((eql num 18) "eighteen")
-   ((eql num 19) "nineteen")
-   ((eql num 20) "twenty")
-   (:else (user-error "no string form for %d" num))))
+(eval-and-compile
+  (defun s-number-word (num)
+    (cond
+     ((eql num 1) "one")
+     ((eql num 2) "two")
+     ((eql num 3) "three")
+     ((eql num 4) "four")
+     ((eql num 5) "five")
+     ((eql num 6) "six")
+     ((eql num 7) "seven")
+     ((eql num 8) "eight")
+     ((eql num 9) "nine")
+     ((eql num 10) "ten")
+     ((eql num 11) "eleven")
+     ((eql num 12) "twelve")
+     ((eql num 13) "thirteen")
+     ((eql num 14) "fourteen")
+     ((eql num 15) "fifteen")
+     ((eql num 16) "sixteen")
+     ((eql num 17) "seventeen")
+     ((eql num 18) "eighteen")
+     ((eql num 19) "nineteen")
+     ((eql num 20) "twenty")
+     (:else (user-error "no string form for %d" num)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -202,6 +203,14 @@ Use this to guard against blank user input or empty configuration values."
 	 (setq second (if (numberp second) second 0)))
       first
     second))
+
+(cl-defmacro make-add-to-list-fn (list &optional &key append)
+  "Return a lambda that appends ITEM to LIST via `add-to-list'.
+LIST may be a bare symbol or a quoted symbol."
+  (let ((sym (if (and (consp list) (eq (car list) 'quote))
+                 (cadr list)
+               list)))
+    `(lambda (item) (add-to-list ',sym item ,append))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
