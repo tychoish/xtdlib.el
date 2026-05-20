@@ -1,4 +1,4 @@
-#+TITLE: xlib.el -- eXtended Emacs Lisp Library
+#+TITLE: xtdlib.el -- eXtended Emacs Lisp Library
 #+OPTIONS: toc:2 num:nil
 
 * Overview
@@ -28,8 +28,8 @@ Not yet on MELPA. Requires Emacs 30.1 and the packages =f=, =s=, =ht=, and =dash
 ** With =package-vc= and =use-package=
 
 #+BEGIN_SRC emacs-lisp
-(use-package xlib
-  :vc (:url "https://github.com/tychoish/xlib.el" :rev :newest)
+(use-package xtdlib
+  :vc (:url "https://github.com/tychoish/xtdlib.el" :rev :newest)
   :demand t)
 #+END_SRC
 
@@ -42,12 +42,12 @@ Not yet on MELPA. Requires Emacs 30.1 and the packages =f=, =s=, =ht=, and =dash
 Clone the repository, then point =use-package= at it with =:load-path=:
 
 #+BEGIN_SRC sh
-git clone https://github.com/tychoish/xlib.el ~/path/to/xlib.el
+git clone https://github.com/tychoish/xtdlib.el ~/path/to/xtdlib.el
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(use-package xlib
-  :load-path "~/path/to/xlib.el"
+(use-package xtdlib
+  :load-path "~/path/to/xtdlib.el"
   :demand t)
 #+END_SRC
 
@@ -58,27 +58,27 @@ This works with any Emacs version that has =use-package= (28+) and does not requ
 Clone the repository and add it to your =load-path=:
 
 #+BEGIN_SRC sh
-git clone https://github.com/tychoish/xlib.el ~/path/to/xlib.el
+git clone https://github.com/tychoish/xtdlib.el ~/path/to/xtdlib.el
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "~/path/to/xlib.el")
-(require 'xlib)
+(add-to-list 'load-path "~/path/to/xtdlib.el")
+(require 'xtdlib)
 #+END_SRC
 
 * API Reference
 
 #+BEGIN_COMMENT
-The reference below is generated from docstrings in xlib.el. To
-regenerate after editing, open this file in Emacs, ensure xlib is on
+The reference below is generated from docstrings in xtdlib.el. To
+regenerate after editing, open this file in Emacs, ensure xtdlib is on
 your load-path, then run M-x org-babel-execute-buffer. Commit the
 updated #+RESULTS: blocks along with any source changes.
 #+END_COMMENT
 
-#+NAME: xlib-extract
+#+NAME: xtdlib-extract
 #+BEGIN_SRC emacs-lisp :var syms="" :results output raw :exports none
   (add-to-list 'load-path (expand-file-name "."))
-  (require 'xlib)
+  (require 'xtdlib)
   ;; Clear any stale #+RESULTS: content for this #+CALL: before generating.
   (when (and (boundp 'org-babel-current-src-block-location)
              org-babel-current-src-block-location)
@@ -92,7 +92,7 @@ updated #+RESULTS: blocks along with any source changes.
              (when first-sym
                (goto-char (point-min))
                (when (re-search-forward
-                      (format "#\\+CALL:.*xlib-extract.*%s"
+                      (format "#\\+CALL:.*xtdlib-extract.*%s"
                               (regexp-quote first-sym))
                       nil t)
                  (when (re-search-forward "^[ \t]*#\\+RESULTS:" nil t)
@@ -103,7 +103,7 @@ updated #+RESULTS: blocks along with any source changes.
                        (forward-line 1))
                      (when (> (point) beg)
                        (delete-region beg (point)))))))))))))
-  (defun xlib--format-doc (doc)
+  (defun xtdlib--format-doc (doc)
     (mapconcat
      (lambda (para)
        (cond
@@ -134,14 +134,14 @@ updated #+RESULTS: blocks along with any source changes.
                      (if doc "" "TODO ")
                      name
                      args-str
-                     (if doc (xlib--format-doc doc) "*no docstring*")))))
+                     (if doc (xtdlib--format-doc doc) "*no docstring*")))))
 #+END_SRC
 
-#+RESULTS: xlib-extract
+#+RESULTS: xtdlib-extract
 
 ** Timing
 
-#+CALL: xlib-extract(syms="slow-op-reporting slow-op-threshold with-slow-op-timer") :results output raw
+#+CALL: xtdlib-extract(syms="slow-op-reporting slow-op-threshold with-slow-op-timer") :results output raw
 
 #+RESULTS:
 *** TODO ~slow-op-reporting~
@@ -156,9 +156,11 @@ updated #+RESULTS: blocks along with any source changes.
 
 Send a message the BODY operation of NAME takes longer to execute than a hardcoded threshold.
 
+: (fn NAME &rest BODY)
+
 ** Strings
 
-#+CALL: xlib-extract(syms="s-equal s-empty-p -filter-s-trim s-or-char-equal s-define-join-string-function s-join-with-hyphen s-join-with-space s-join-with-underscore s-join-with-kebab s-join-with-spc s-join-with-snake s-join-with-pipe s-shortest s-collapse-hyphens s-normalize-symbol-name s-trimmed-or-nil s-trim-non-word-chars s-blank-p s-contains-whitespace-p s-default s-number-word") :results output raw
+#+CALL: xtdlib-extract(syms="s-equal s-empty-p -filter-s-trim s-or-char-equal s-define-join-string-function s-join-with-hyphen s-join-with-space s-join-with-underscore s-join-with-kebab s-join-with-spc s-join-with-snake s-join-with-pipe s-shortest s-collapse-hyphens s-normalize-symbol-name s-trimmed-or-nil s-trim-non-word-chars s-blank-p s-contains-whitespace-p s-default s-number-word") :results output raw
 
 #+RESULTS:
 *** ~s-equal~ =(s1 s2)=
@@ -185,7 +187,7 @@ Return t when CHAR equals VALUE, where VALUE may be a character or single-char s
 
 *** ~s-define-join-string-function~ =(char &rest --cl-rest--)=
 
-Define a function ‘s-join-with-NAME’ that joins non-empty strings with CHAR as separator. NAME is derived from CHAR via ‘xlib--join-char-names’, falling back to the Unicode character name. When USE-JARGON-NAMES is non-nil, the alternate jargon name is used (e.g. kebab vs hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces.
+Define a function ‘s-join-with-NAME’ that joins non-empty strings with CHAR as separator. NAME is derived from CHAR via ‘xtdlib--join-char-names’, falling back to the Unicode character name. When USE-JARGON-NAMES is non-nil, the alternate jargon name is used (e.g. kebab vs hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces.
 
 : (fn CHAR &optional &key USE-JARGON-NAMES SPACE-PADDING)
 
@@ -255,7 +257,7 @@ Return the English word for integer NUM. Supports values 1 through 20.
 
 ** Lists
 
-#+CALL: xlib-extract(syms="larger smaller make-add-to-list-fn -distinct-by-car -distinct-paths -distinct-by-alist-key -unwind -flat-map --flat-map -mapc -join -append -reverse -sparse -c -l -strings -sparse-append -map-in-place --map-in-place -in-place --in-place -map-uniq --map-uniq --mapc") :results output raw
+#+CALL: xtdlib-extract(syms="larger smaller make-add-to-list-fn -distinct-by-car -distinct-paths -distinct-by-alist-key -unwind -flat-map --flat-map -mapc -join -append -reverse -sparse -c -l -strings -sparse-append -map-in-place --map-in-place -in-place --in-place -map-uniq --map-uniq --mapc") :results output raw
 
 #+RESULTS:
 *** ~larger~ =(&optional first second)=
@@ -396,7 +398,7 @@ This is the anaphoric counterpart to ‘-mapc’.
 
 ** Hash Tables
 
-#+CALL: xlib-extract(syms="ht-get-lambda ht-set-lambda ht-contains-p-lambda ht-get-function ht-set-function ht-contains-p-function ht-make-named-table") :results output raw
+#+CALL: xtdlib-extract(syms="ht-get-lambda ht-set-lambda ht-contains-p-lambda ht-get-function ht-set-function ht-contains-p-function ht-make-named-table") :results output raw
 
 #+RESULTS:
 *** ~ht-get-lambda~ =(table)=
@@ -431,7 +433,7 @@ Define a named hash table variable and named accessor functions. Creates ‘ht-N
 
 ** Files
 
-#+CALL: xlib-extract(syms="f-mtime f-atime f-make-slug f-filename-is-p f-when-file-exists f-distinct f-directories-containing-file-with-extension-function f-files-in-directory f-recursive-directories-containing f-directories-containing-file-function f-collapse-homedir f-visually-compress-path f-visual-compression-function f-filter-directories f-visually-compress-to-one f-visually-compress-to-two f-visually-compress-to-three f-visually-compress-to-four f-visually-compress-to-five f-visually-compress-to-six f-visually-compress-to-seven f-visually-compress-to-eight f-visually-compress-to-nine f-visually-compress-to-ten") :results output raw
+#+CALL: xtdlib-extract(syms="f-mtime f-atime f-make-slug f-filename-is-p f-when-file-exists f-distinct f-directories-containing-file-with-extension-function f-files-in-directory f-recursive-directories-containing f-directories-containing-file-function f-collapse-homedir f-visually-compress-path f-visual-compression-function f-filter-directories f-visually-compress-to-one f-visually-compress-to-two f-visually-compress-to-three f-visually-compress-to-four f-visually-compress-to-five f-visually-compress-to-six f-visually-compress-to-seven f-visually-compress-to-eight f-visually-compress-to-nine f-visually-compress-to-ten") :results output raw
 
 #+RESULTS:
 *** ~f-mtime~ =(filename)=
@@ -532,7 +534,7 @@ Return entries from SEQUENCE that are existing directories. OPTIONS is a symbol 
 
 ** Options
 
-#+CALL: xlib-extract(syms="option-set-p") :results output raw
+#+CALL: xtdlib-extract(syms="option-set-p") :results output raw
 
 #+RESULTS:
 *** ~option-set-p~ =(opt options)=
@@ -545,7 +547,7 @@ Return non-nil if OPT is present in OPTIONS. OPTIONS may be a single symbol or a
 
 ** Utility Macros
 
-#+CALL: xlib-extract(syms="disabled with-force-write pos-arg pa add-one-shot-hook make-run-hooks-function-for create-toggle-functions make-read-extended-command-for-prefix with-toggle-once with-prefix-arg with-default-directory with-silence with-quiet with-temp-keymap setq-when-nil with-timer compile-buffer-name merge-predicate-functions") :results output raw
+#+CALL: xtdlib-extract(syms="disabled with-force-write pos-arg pa add-one-shot-hook make-run-hooks-function-for create-toggle-functions make-read-extended-command-for-prefix with-toggle-once with-prefix-arg with-default-directory with-silence with-quiet with-temp-keymap setq-when-nil with-timer compile-buffer-name merge-predicate-functions") :results output raw
 
 #+RESULTS:
 *** ~disabled~ =(&rest body)=
@@ -636,7 +638,7 @@ Return a lambda that applies each predicate in PREDS to its argument with ‘and
 
 ** Project Context
 
-#+CALL: xlib-extract(syms="buffer-derived-mode-p mode-buffers-for-project mode-buffers package-available-p approximate-project-root approximate-project-name approximate-project-buffers") :results output raw
+#+CALL: xtdlib-extract(syms="buffer-derived-mode-p mode-buffers-for-project mode-buffers package-available-p approximate-project-root approximate-project-name approximate-project-buffers") :results output raw
 
 #+RESULTS:
 *** TODO ~buffer-derived-mode-p~ =(buffer mode)=
