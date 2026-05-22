@@ -2,7 +2,7 @@
 
 ;; Author: sam kleinman (tychoish)
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "30.1") (f "0.20") (s "1.12") (ht "2.3") (dash "2.19"))
+;; Package-Requires: ((emacs "29.4") (f "0.20") (s "1.12") (ht "2.3") (dash "2.19"))
 ;; Keywords: utility, library, elisp.
 ;; URL: https://github.com/tychoish/xtdlib.el
 
