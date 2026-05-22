@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - "29.4"
+          - "30.2"
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+
+      - name: Set up Cask
+        uses: cask/setup-cask@master
+
+      - name: Install dependencies
+        run: cask install
+
+      - name: Run tests
+        run: cask exec ert-runner test/test-xtdlib.el
