@@ -228,7 +228,7 @@ LIST may be a bare symbol or a quoted symbol."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; `dash.el' -- extensions and additons
+;; `dash.el' -- extensions and additions
 
 (cl-defun -distinct-by-car (cell &optional &key (test #'equal))
   "Take a list of cons cells and return a new list that contains only the
@@ -458,7 +458,7 @@ Creates `ht-NAME-get', `ht-NAME-set', and `ht-NAME-contains-p'. TEST defaults to
 
 (defun f-when-file-exists (path)
   "Return PATH if it exists on the filesystem, otherwise nil."
-  (when (f-exists-p path)
+  (when (file-exists-p path)
     path))
 
 (defun f-distinct (sequence)
