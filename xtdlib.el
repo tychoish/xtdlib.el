@@ -454,7 +454,7 @@ Creates `ht-NAME-get', `ht-NAME-set', and `ht-NAME-contains-p'. TEST defaults to
 
 (defun f-filename-is-p (entry name)
   "Return non-nil if the filename component of path ENTRY equals NAME."
-  (f-equal-p (f-filename entry) name))
+  (f-equal-p (file-name-nondirectory entry) name))
 
 (defun f-when-file-exists (path)
   "Return PATH if it exists on the filesystem, otherwise nil."
@@ -482,7 +482,7 @@ Creates `ht-NAME-get', `ht-NAME-set', and `ht-NAME-contains-p'. TEST defaults to
 	    (--flat-map (f-entries it #'f-file-p))
 	    (--filter (f-ext-p it ,extension))
 	    (-map #'f-dirname)
-	    (-distinct)))))
+	    (seq-uniq)))))
 
 (defun f-files-in-directory (path)
   "Return a flat list of all files under PATH.
@@ -512,9 +512,9 @@ Also accepts additional FILES as alternate names to match."
 
        (defun ,pred (path)
 	 (let ((matching (->> (f-files-in-directory path)
-			      (--filter (f-equal-p ,filename (f-filename it)))
+			      (--filter (f-equal-p ,filename (file-name-nondirectory it)))
 			      (-uniq)
-			      (-non-nil))))
+			      (seq-filter 'identity))))
 	   (when matching
 	     (car matching))))
 
@@ -523,9 +523,9 @@ Also accepts additional FILES as alternate names to match."
 	       (paths (cons path paths)))
 	   (->> paths
 		(-flat-map #'f-files-in-directory)
-		(--filter (car (member (f-filename it) filenames)))
+		(--filter (car (member (file-name-nondirectory it) filenames)))
 		(-map #'f-dirname)
-		(-distinct)))))))
+		(seq-uniq)))))))
 
 (defun f-collapse-homedir (path)
   "Replace the expanded home directory prefix in PATH with `~/'."
@@ -661,7 +661,7 @@ collisions. CLEANUP uninterns the generated symbol after the hook fires."
       (setq hooks (list hook)))
 
     (when (listp hook)
-      (if (null (-remove #'symbolp hook))
+      (if (null (seq-remove #'symbolp hook))
 	  (setq hooks hook)
 	(setq hooks (eval hook)))
       (if (symbolp hooks)
@@ -917,7 +917,7 @@ Use this to guard optional integrations with packages that may not be present."
          (projectile-project-name))
        (when (project-current)
          (project-root (project-current)))
-       (f-filename (expand-file-name default-directory)))))
+       (file-name-nondirectory (expand-file-name default-directory)))))
 
 (defun approximate-project-buffers ()
   "Return buffers belonging to the current project."
