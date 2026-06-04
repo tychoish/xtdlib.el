@@ -916,7 +916,8 @@ Use this to guard optional integrations with packages that may not be present."
    (or (when (package-available-p 'projectile)
          (projectile-project-name))
        (when (project-current)
-         (project-root (project-current)))
+         (file-name-nondirectory
+          (directory-file-name (project-root (project-current)))))
        (file-name-nondirectory (expand-file-name default-directory)))))
 
 (defun approximate-project-buffers ()
