@@ -619,6 +619,22 @@ OPTIONS may be a single symbol or a list of symbols."
 
 (defalias 'pa 'pos-arg)
 
+(cl-defmacro add-lazy-init (&key name operation (delay 1))
+  (unless operation
+    (user-error "cannot specify lazy-init without a function or symbol"))
+  (when (and (stringp operation) (not (string-empty-p operation))
+	     (inern-soft operation))
+    (setq operation (intern operation)))
+
+  (unless (and name (stringp name) (not (string-empty-p (string-trim name)))
+	       (not (symbolp operation)))
+    (setq name (format "<lazy> %s" (symbol-name operation))))
+  `(run-with-idle-timer
+    ,delay nil
+    (lambda ()
+      (with-slow-op-timer ,name
+	(funcall ,operation)))))
+
 (cl-defmacro add-one-shot-hook
     (&key name hook function result body form operation
 	  ;; flags and options; with defaults
