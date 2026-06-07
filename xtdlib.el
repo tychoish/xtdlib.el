@@ -623,7 +623,7 @@ OPTIONS may be a single symbol or a list of symbols."
   (unless operation
     (user-error "cannot specify lazy-init without a function or symbol"))
   (when (and (stringp operation) (not (string-empty-p operation))
-	     (inern-soft operation))
+	     (intern-soft operation))
     (setq operation (intern operation)))
 
   (unless (and name (stringp name) (not (string-empty-p (string-trim name)))
