@@ -71,6 +71,7 @@ Turns `with-slow-op-timer' from a noop to reporting on the duration of enclosed 
 
 (defalias 's-equal #'string-equal)
 (defalias 's-empty-p #'string-empty-p)
+(defalias 's-plural-for #'resolve-plural-form)
 
 (defun -filter-s-trim (strs)
   "Return STRS with non-strings removed and remaining strings trimmed of whitespace.
@@ -80,6 +81,14 @@ Empty strings and strings that are entirely whitespace are excluded from the res
        (-filter #'stringp)
        (-map #'string-trim)
        (-remove #'s-empty-p)))
+
+(defun resolve-plural-form (quantity singular plural)
+  (cond
+   ((listp quantity) (resolve-plural-form (length quantity) singular plural))
+   ((stringp quantity) (resolve-plural-form (string-to-number quantity) singular plural))
+   ((= -1 quantity) singular)
+   ((= 1 quantity) singular)
+   (t plural))
 
 (defun s-or-char-equal (char value)
   "Return t when CHAR equals VALUE, where VALUE may be a character or single-char string."
