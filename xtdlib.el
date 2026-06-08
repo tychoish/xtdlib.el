@@ -88,7 +88,7 @@ Empty strings and strings that are entirely whitespace are excluded from the res
    ((stringp quantity) (resolve-plural-form (string-to-number quantity) singular plural))
    ((= -1 quantity) singular)
    ((= 1 quantity) singular)
-   (t plural))
+   (t plural)))
 
 (defun s-or-char-equal (char value)
   "Return t when CHAR equals VALUE, where VALUE may be a character or single-char string."
