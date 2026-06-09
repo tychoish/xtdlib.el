@@ -39,7 +39,8 @@
 (declare-function which-key-add-keymap-based-replacements "which-key")
 
 (eval-when-compile
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'bind-key))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -800,12 +801,14 @@ Optionally bind the command to BIND-KEY in BIND-MAP with KEY-ALIAS as the which-
 	 (user-command-name (format "execute-extended-%s-command" prefix))
 	 (user-command-symbol (intern user-command-name)))
     `(prog1
-       (defun ,user-command-symbol ()
-	 ,(format "Read extentend command but filtered for only those beginning with prefix `%s'." prefix)
-	 (interactive)
-	 (let ((read-extended-command-predicate #',predicate-symbol))
-	   (execute-extended-command nil)))
-       (defun ,predicate-symbol (command buffer)
+	 (defun ,user-command-symbol ()
+	   ,(format "Read extentend command but filtered for only those beginning with prefix `%s'." prefix)
+	   (interactive)
+	   (let ((read-extended-command-predicate #',predicate-symbol))
+	     (with-suppressed-warnings ((interactive-only execute-extended-command))
+	       (execute-extended-command nil))))
+
+       (defun ,predicate-symbol (command _)
 	 ,(format "Predicate for `read-extended-command-predicate' to filter commands returning only those that start with the prefix `%s'" prefix)
 	 (s-prefix-p ,prefix (symbol-name command)))
        ,(when bind-key
