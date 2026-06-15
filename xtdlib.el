@@ -946,7 +946,7 @@ Use this to guard optional integrations with packages that may not be present."
        (when (project-current)
          (file-name-nondirectory
           (directory-file-name (project-root (project-current)))))
-       (file-name-nondirectory (expand-file-name default-directory)))))
+       (file-name-nondirectory (directory-file-name (expand-file-name default-directory))))))
 
 (defun approximate-project-buffers ()
   "Return buffers belonging to the current project."
