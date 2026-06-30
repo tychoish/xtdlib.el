@@ -27,7 +27,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-
       - run: cask install
-      - run: find elpa -name "*.elc" -delete
-      - run: cask exec ert-runner test/test-xtdlib.el
+      - run: cask exec ert-runner test/*.el
