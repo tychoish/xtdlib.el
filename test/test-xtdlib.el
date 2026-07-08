@@ -1188,6 +1188,33 @@ macro-expansion time via (daemonp), so this test mirrors that logic."
       (should timer-fired)
       (should-not xtdlib--test-hook-var))))
 
+(defvar xtdlib--test-no-lexical-fire-count nil)
+
+(ert-deftest xtdlib/add-one-shot-hook-works-without-caller-lexical-binding ()
+  "Regression test: a caller file with no `lexical-binding: t' cookie (e.g. a
+per-machine user/*.el override) must still be able to use this macro. The
+generated cleanup function used to close over lexically-scoped counter state,
+which silently broke with a void-variable error once dynamic binding was in
+effect at the call site -- exactly what happened when a real config file was
+missing its lexical-binding cookie and crashed the Emacs daemon at startup."
+  (setq xtdlib--test-hook-var nil
+        xtdlib--test-no-lexical-fire-count 0)
+  (let ((expansion (macroexpand-1
+                     '(add-one-shot-hook
+                       :name "xtdlib-test-no-lexical-binding"
+                       :hook 'xtdlib--test-hook-var
+                       :count 2
+                       :form (setq xtdlib--test-no-lexical-fire-count
+                                   (1+ xtdlib--test-no-lexical-fire-count))))))
+    ;; `eval' with its optional LEXICAL argument nil forces dynamic binding,
+    ;; reproducing a caller file that lacks the lexical-binding cookie.
+    (eval expansion nil)
+    (run-hooks 'xtdlib--test-hook-var)
+    (run-hooks 'xtdlib--test-hook-var)
+    (run-hooks 'xtdlib--test-hook-var)
+    (should (= 2 xtdlib--test-no-lexical-fire-count))
+    (should-not xtdlib--test-hook-var)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; merge-predicate-functions
 
