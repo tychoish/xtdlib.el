@@ -523,10 +523,6 @@ Return buffers in the current project whose major mode derives from MODE. MODE d
 
 Return all live buffers whose major mode derives from MODE. MODE defaults to ‘major-mode’ of the calling buffer. Searches across all buffers, not just the current project.
 
-*** ~package-available-p~
-
-Return non-nil if the feature NAME is currently loaded via ‘featurep’. Use this to guard optional integrations with packages that may not be present.
-
 *** ~approximate-project-root~
 
 Return the current project root, falling back to ‘default-directory’.

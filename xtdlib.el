@@ -928,14 +928,9 @@ not just the current project."
 	  (when (derived-mode-p mode)
 	    (current-buffer))))))
 
-(defun package-available-p (name)
-  "Return non-nil if the feature NAME is currently loaded via `featurep'.
-Use this to guard optional integrations with packages that may not be present."
-  (featurep name))
-
 (defun approximate-project-root ()
   "Return the current project root, falling back to `default-directory'."
-  (or (when (package-available-p 'projectile)
+  (or (when (featurep 'projectile)
         (s-trimmed-or-nil (projectile-project-root)))
       (when (and (featurep 'project) (project-current))
         (project-root (project-current)))
@@ -944,7 +939,7 @@ Use this to guard optional integrations with packages that may not be present."
 (defun approximate-project-name ()
   "Return the current project name, falling back to the directory basename."
   (s-trim-non-word-chars
-   (or (when (package-available-p 'projectile)
+   (or (when (featurep 'projectile)
          (projectile-project-name))
        (when (project-current)
          (file-name-nondirectory
@@ -953,7 +948,7 @@ Use this to guard optional integrations with packages that may not be present."
 
 (defun approximate-project-buffers ()
   "Return buffers belonging to the current project."
-  (or (when (package-available-p 'projectile)
+  (or (when (featurep 'projectile)
         (projectile-project-buffers))
       (when (and (featurep 'project) (project-current))
         (project-buffers (project-current)))

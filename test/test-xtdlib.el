@@ -1,4 +1,4 @@
-;;; test-xtdlib.el --- ERT tests for xtdlib.el -*- lexical-binding: t -*-
+;;; test-xtdlib.el --- ERT tests for xtdlib.el -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Run inside a live Emacs session with full config loaded:
 ;;   M-x ert RET t RET
@@ -746,16 +746,6 @@
     (should (string-match-p "foo" result))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; package-available-p
-
-(ert-deftest xtdlib/package-available-p-returns-t-for-loaded-feature ()
-  (provide 'xtdlib-test-fake-feature)
-  (should (package-available-p 'xtdlib-test-fake-feature)))
-
-(ert-deftest xtdlib/package-available-p-returns-nil-for-unknown-package ()
-  (should-not (package-available-p 'xtdlib-test-nonexistent-package-zzz)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; approximate-project-root
 
 (ert-deftest xtdlib/approximate-project-root-returns-string ()
@@ -767,7 +757,9 @@
 (ert-deftest xtdlib/approximate-project-root-fallback-is-default-directory ()
   "When no project backend is active the result is default-directory."
   (let ((default-directory temporary-file-directory))
-    (cl-letf (((symbol-function 'package-available-p) (lambda (_) nil))
+    (cl-letf (((symbol-function 'featurep)
+               (lambda (sym &rest _)
+                 (if (eq sym 'projectile) nil (featurep sym))))
               ((symbol-function 'package-installed-p) (lambda (_) nil))
               ((symbol-function 'project-current) (lambda (&rest _) nil)))
       (should (f-equal-p (expand-file-name temporary-file-directory)
@@ -776,11 +768,12 @@
 (ert-deftest xtdlib/approximate-project-root-uses-project-el-when-available ()
   "When project.el reports a root it is returned."
   (let* ((expected "/tmp/fake-project/"))
-    (cl-letf (((symbol-function 'package-available-p) (lambda (_) nil))
-              ((symbol-function 'package-installed-p) (lambda (_) nil))
+    (cl-letf (((symbol-function 'package-installed-p) (lambda (_) nil))
               ((symbol-function 'featurep)
                (lambda (sym &rest _)
-                 (if (eq sym 'project) t (featurep sym))))
+                 (cond ((eq sym 'projectile) nil)
+                       ((eq sym 'project) t)
+                       (t (featurep sym)))))
               ((symbol-function 'project-current) (lambda (&rest _) t))
               ((symbol-function 'project-root) (lambda (_) expected)))
       (should (equal expected (approximate-project-root))))))
@@ -818,7 +811,9 @@
   "When no project backend is active, the fallback includes the current buffer."
   (with-temp-buffer
     (let ((buf (current-buffer)))
-      (cl-letf (((symbol-function 'package-available-p) (lambda (_) nil))
+      (cl-letf (((symbol-function 'featurep)
+                 (lambda (sym &rest _)
+                   (if (eq sym 'projectile) nil (featurep sym))))
                 ((symbol-function 'package-installed-p) (lambda (_) nil))
                 ((symbol-function 'project-current) (lambda (&rest _) nil)))
         (should (memq buf (approximate-project-buffers)))))))
