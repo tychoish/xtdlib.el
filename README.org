@@ -105,6 +105,8 @@ Additional symbol kinds are controlled by `include-kinds':
 
 *** ~with-slow-op-timer~
 
+: (fn NAME &rest BODY)
+
 Send a message the BODY operation of NAME takes longer to execute than a hardcoded threshold.
 
 ** Strings
@@ -123,19 +125,23 @@ See also ‘string-equal-ignore-case’.
 
 Check whether STRING is empty.
 
-*** TODO ~s-plural-for~
+*** ~s-plural-for~
 
-*no docstring*
+: (fn QUANTITY SINGULAR PLURAL)
 
 *** ~-filter-s-trim~
 
+: (fn STRS)
+
 Return STRS with non-strings removed and remaining strings trimmed of whitespace. Empty strings and strings that are entirely whitespace are excluded from the result.
 
-*** TODO ~resolve-plural-form~
+*** ~resolve-plural-form~
 
-*no docstring*
+: (fn QUANTITY SINGULAR PLURAL)
 
 *** ~s-or-char-equal~
+
+: (fn CHAR VALUE)
 
 Return t when CHAR equals VALUE, where VALUE may be a character or single-char string.
 
@@ -147,33 +153,49 @@ Define a function ‘s-join-with-NAME’ that joins non-empty strings with CHAR 
 
 *** ~s-shortest~
 
+: (fn A B)
+
 Return the shorter of strings A and B. When equal in length, return A.
 
 *** ~s-collapse-hyphens~
+
+: (fn STR)
 
 Replace runs of three or more consecutive hyphens in STR with a single hyphen.
 
 *** ~s-normalize-symbol-name~
 
+: (fn NAME)
+
 Normalize NAME to a clean hyphen-separated string suitable for use as a symbol name. Trims outer whitespace, collapses internal whitespace, replaces common punctuation with hyphens, and collapses runs of three or more hyphens.
 
 *** ~s-trimmed-or-nil~
+
+: (fn VALUE)
 
 Return VALUE trimmed of surrounding whitespace, or nil if VALUE is not a string or is empty after trimming.
 
 *** ~s-trim-non-word-chars~
 
+: (fn VALUE)
+
 Trim leading and trailing non-word characters from VALUE. Return nil if VALUE is not a string or is empty after trimming.
 
 *** ~s-blank-p~
+
+: (fn VALUE)
 
 Return t when VALUE is a string that is empty or consists entirely of whitespace. Returns nil for non-strings, non-empty strings, and strings with non-whitespace content. Use this to guard against blank user input or empty configuration values.
 
 *** ~s-contains-whitespace-p~
 
+: (fn VALUE)
+
 Return t when VALUE is a string that is empty or consists entirely of whitespace. Returns nil for non-strings, non-empty strings, and strings with non-whitespace content. Use this to guard against blank user input or empty configuration values.
 
 *** ~s-default~
+
+: (fn DEFAULT INPUT)
 
 Return DEFAULT when INPUT is nil or an empty string, otherwise return INPUT.
 
@@ -181,9 +203,13 @@ Return DEFAULT when INPUT is nil or an empty string, otherwise return INPUT.
 
 *** ~larger~
 
+: (fn &optional FIRST SECOND)
+
 Return the larger value. If either FIRST or SECOND are not numbers, treat them as 0.
 
 *** ~smaller~
+
+: (fn &optional FIRST SECOND)
 
 Return the smaller value. If either FIRST or SECOND are not numbers, treat them as 0.
 
@@ -203,6 +229,8 @@ Take a list of cons cells and return a new list that contains only the elements 
 
 *** ~-distinct-paths~
 
+: (fn CELL)
+
 Return CELL with duplicate file paths removed, using ‘f-equal-p’ for comparison. Unlike ‘-distinct’, this handles paths that differ only in trailing slashes or relative vs. absolute form when the filesystem resolves them to the same location.
 
 *** ~-distinct-by-alist-key~
@@ -212,6 +240,8 @@ Return CELL with duplicate file paths removed, using ‘f-equal-p’ for compari
 Compare a list of alists, and return a new list that contains only the alists that have distinct values for a specific key. Compare values using the test function, which defaults to ‘equal’.
 
 *** ~-unwind~
+
+: (fn LIST)
 
 Flatten LIST by exactly one level, collecting nested list items into a single list. Unlike ‘-flatten’, which recurses fully, ‘-unwind’ only removes one layer of nesting.
 
@@ -249,8 +279,6 @@ Reverse order of items in a list, vector or string SEQ. If SEQ is a list, it sho
 
 *** ~-sparse~
 
-: (fn LIST)
-
 Return a copy of LIST with all nil items removed.
 
 *** ~-c~
@@ -267,17 +295,25 @@ Return a newly created list with specified arguments as elements. Allows any num
 
 *** ~-strings~
 
+: (fn &rest INPUT)
+
 Return INPUT as a flat list, optionally coercing non-string elements. A trailing ‘:options OPT’ pair in INPUT selects how non-strings are handled: ‘filter’ drops them, ‘stringify’ formats them with ‘format’. OPT may be a list combining these symbols. When ‘:options’ is not provided or its value is nil, INPUT is returned as-is without coercion. A ‘user-error’ is signaled only when OPT is some other, unrecognized value.
 
 *** ~-sparse-append~
+
+: (fn &rest ITEMS)
 
 Append ITEMS and remove all nil values from the concatenated result.
 
 *** ~-map-in-place~
 
+: (fn MAPPER ITEMS)
+
 Apply the ‘mapper’ function to every item in the list ‘items’ and replace the items in the original list with the results of the function, returning the list. This is a destructive operation.
 
 *** ~-in-place~
+
+: (fn MAPPER ITEMS)
 
 Destructively apply MAPPER to every item in ITEMS, replacing each element in place. Returns the count of elements processed. Use this when you need the element count rather than the list itself; prefer ‘-map-in-place’ when you need the modified list back.
 
@@ -289,11 +325,15 @@ Apply the ‘mapper’ function to every item in the ‘input’ list, returning
 
 *** ~--mapc~
 
+: (fn FORM INPUT-LIST)
+
 Apply the form (with the current element avalible as the variable ‘it’) to all item in the list, primarily for side effects. Returns the input list. This is an anaphoric equivalent to ‘mapc’. As opposed to ‘--each’ and ‘-each’, which return nil, ‘-mapc’ returns the input list.
 
 This is the anaphoric counterpart to ‘-mapc’.
 
 *** ~--flat-map~
+
+: (fn FORM INPUT-LIST)
 
 ‘--flat-map’ evaluates a form for very item in ‘input-list’ with the item bound to ‘it’. The form must return a list, and the returned lists are then concatenated or joined into a single flattened list. This provides a dash.el conforming API for the ‘mapcan’ operation.
 
@@ -301,17 +341,23 @@ This is the anaphoric counterpart to ‘-flat-map’.
 
 *** ~--map-in-place~
 
+: (fn FORM ITEMS)
+
 Apply the form, (with the current element as ‘it’) to each item in the list, distructively setting the return value of the form to the value in the list.
 
 This is the anaphoric counterpart to ‘-map-in-place’.
 
 *** ~--in-place~
 
+: (fn FORM ITEMS)
+
 Take a list and replace each element in the list with the result of evaluating ‘FORM’ for that element. The original element is accessable in the ‘FORM’ as ‘it‘. Returns the number of items in the list. This is a destructive operation.
 
 This is the anaphoric counterpart to ‘-in-place’.
 
 *** ~--map-uniq~
+
+: (fn FORM INPUT)
 
 Apply ‘FORM’ to every item in the input list, available as ‘it’, and collect the UNIQUE results, and returning them as a list. Items are compared for uniqueness with ‘equal’ by default, which can be overridden with the ‘-compare-fn’ dynamic variable.
 
@@ -321,27 +367,33 @@ This is the anaphoric counterpart to -map-unique. Although the handling of the e
 
 *** ~ht-get-lambda~
 
+: (fn TABLE)
+
 Return a lambda of one argument KEY that looks up KEY in TABLE.
 
 *** ~ht-set-lambda~
+
+: (fn TABLE)
 
 Return a lambda of two arguments KEY and VALUE that sets KEY to VALUE in TABLE.
 
 *** ~ht-contains-p-lambda~
 
+: (fn TABLE)
+
 Return a lambda of one argument KEY that tests whether KEY is present in TABLE.
 
-*** TODO ~ht-get-function~
+*** ~ht-get-function~
 
-*no docstring*
+: (fn TABLE)
 
-*** TODO ~ht-set-function~
+*** ~ht-set-function~
 
-*no docstring*
+: (fn TABLE)
 
-*** TODO ~ht-contains-p-function~
+*** ~ht-contains-p-function~
 
-*no docstring*
+: (fn TABLE)
 
 *** ~ht-make-named-table~
 
@@ -353,57 +405,85 @@ Define a named hash table variable and named accessor functions. Creates ‘ht-N
 
 *** ~f-mtime~
 
+: (fn FILENAME)
+
 Return the modification time of FILENAME as a time value.
 
 *** ~f-atime~
+
+: (fn FILENAME)
 
 Return the access time of FILENAME as a time value.
 
 *** ~f-make-slug~
 
+: (fn S)
+
 Turn a string, S, into a hyphen-seperated slug for filename.
 
 *** ~f-filename-is-p~
+
+: (fn ENTRY NAME)
 
 Return non-nil if the filename component of path ENTRY equals NAME.
 
 *** ~f-when-file-exists~
 
+: (fn PATH)
+
 Return PATH if it exists on the filesystem, otherwise nil.
 
 *** ~f-distinct~
+
+: (fn SEQUENCE)
 
 Return SEQUENCE with duplicate paths removed using ‘f-equal-p’ for comparison.
 
 *** ~f-directories-containing-file-with-extension-function~
 
+: (fn EXTENSION)
+
 Define ‘f-EXT-file-p’ and ‘f-directories-containing-file-with-extension-EXT’ for EXTENSION.
 
 *** ~f-files-in-directory~
+
+: (fn PATH)
 
 Return a flat list of all files under PATH. PATH may be a directory, a file (returns siblings), or a list of paths.
 
 *** ~f-recursive-directories-containing~
 
+: (fn FILENAME &optional PATH)
+
 Return a list of directories under PATH that contain a file named FILENAME. Searches recursively. PATH defaults to ‘default-directory’ when nil.
 
 *** ~f-directories-containing-file-function~
+
+: (fn FILENAME &rest FILES)
 
 Define helper predicates and a search function for directories containing FILENAME. Also accepts additional FILES as alternate names to match.
 
 *** ~f-collapse-homedir~
 
+: (fn PATH)
+
 Replace the expanded home directory prefix in PATH with ‘~/’.
 
 *** ~f-visually-compress-path~
+
+: (fn NUM PATH)
 
 Truncate each component of PATH to at most NUM characters, preserving the separator.
 
 *** ~f-visual-compression-function~
 
+: (fn NUM)
+
 Define ‘f-visually-compress-to-NAME’ that truncates each path component to NUM characters.
 
 *** ~f-filter-directories~
+
+: (fn OPTIONS &rest SEQUENCE)
 
 Return entries from SEQUENCE that are existing directories. OPTIONS is a symbol or list: ‘cannonicalize’ expands paths to absolute form, ‘unique’ deduplicates results via ‘f-equal-p’.
 
@@ -411,23 +491,33 @@ Return entries from SEQUENCE that are existing directories. OPTIONS is a symbol 
 
 *** ~option-set-p~
 
+: (fn OPT OPTIONS)
+
 Return non-nil if OPT is present in OPTIONS. OPTIONS may be a single symbol or a list of symbols.
 
 ** Utility Macros
 
 *** ~disabled~
 
+: (fn &rest BODY)
+
 Wrap BODY so it never executes. Keeps code byte-compilable while effectively commenting it out.
 
 *** ~with-force-write~
+
+: (fn &rest BODY)
 
 Temporarily clear ‘buffer-read-only’, evaluate BODY, then restore it to t.
 
 *** ~pos-arg~
 
+: (fn NAME &key IS)
+
 Allow positional arguments to have annotated call-sites.
 
 *** ~pa~
+
+: (fn NAME &key IS)
 
 Allow positional arguments to have annotated call-sites.
 
@@ -449,6 +539,8 @@ DEPTH controls hook insertion depth (default 0). LOCAL makes the hook buffer-loc
 
 *** ~make-run-hooks-function-for~
 
+: (fn MODE)
+
 Define a zero-argument function ‘run-hooks-for-MODE’ that runs ‘MODE-hook’.
 
 *** ~create-toggle-functions~
@@ -465,25 +557,37 @@ Define an interactive command that runs ‘execute-extended-command’ filtered 
 
 *** ~with-toggle-once~
 
+: (fn NAME &rest BODY)
+
 Define a function NAME that executes BODY only the first time it is called. Subsequent calls are no-ops. Uses an auto-generated toggle variable to guard execution.
 
 *** ~with-prefix-arg~
+
+: (fn ARG &rest BODY)
 
 Evaluate BODY with ‘current-prefix-arg’ bound to ARG.
 
 *** ~with-default-directory~
 
+: (fn PATH &rest BODY)
+
 Run the body with ‘default-directory’ set to the path provided
 
 *** ~with-silence~
+
+: (fn &rest BODY)
 
 Totally suppress message from either the minibuffer or the *Messages* buffer..
 
 *** ~with-quiet~
 
+: (fn &rest BODY)
+
 Suppress any messages from appearing in the minibuffer area.
 
 *** ~with-temp-keymap~
+
+: (fn MAP &rest BODY)
 
 Bind MAP to a fresh sparse keymap, evaluate BODY, and return the keymap. Use this to build a keymap programmatically and return it in one expression.
 
@@ -495,19 +599,27 @@ Set VARIABLE to VALUE only if VARIABLE is currently nil. Use :local t for ‘set
 
 *** ~with-timer~
 
+: (fn NAME &rest BODY)
+
 Report on NAME and the time taken to execute BODY.
 
 *** ~compile-buffer-name~
 
+: (fn NAME)
+
 Return a function suitable for ‘compilation-buffer-name-function’ that always returns NAME. The returned function accepts one optional argument (the compilation mode) and ignores it.
 
 *** ~merge-predicate-functions~
+
+: (fn &rest PREDS)
 
 Return a lambda that applies each predicate in PREDS to its argument with ‘and’. Short-circuits on the first predicate that returns nil, consistent with ‘and’ semantics.
 
 ** Project Context
 
 *** ~buffer-derived-mode-p~
+
+: (fn BUFFER MODE)
 
 Returns t when the major-mode of ‘buffer’ is or is derived from ‘mode.’
 
@@ -534,12 +646,6 @@ Return the current project name, falling back to the directory basename.
 *** ~approximate-project-buffers~
 
 Return buffers belonging to the current project.
-
-
-
-
-
-
 
 * License
 
