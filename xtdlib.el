@@ -29,14 +29,11 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'f)
 (require 's)
 (require 'ht)
 (require 'dash)
 
-(declare-function bind-key "bind-key")
-(declare-function bind-keys "bind-key")
 (declare-function which-key-add-keymap-based-replacements "which-key")
 
 (eval-when-compile
