@@ -429,7 +429,7 @@
 (ert-deftest xtdlib/ht-get-lambda-retrieves-value ()
   (let* ((tbl (make-hash-table :test #'equal))
          (getter (ht-get-lambda tbl)))
-    (ht-set tbl "key" "val")
+    (setf (map-elt tbl "key") "val")
     (should (equal "val" (funcall getter "key")))))
 
 (ert-deftest xtdlib/ht-get-lambda-missing-key-returns-nil ()
@@ -441,12 +441,12 @@
   (let* ((tbl (make-hash-table :test #'equal))
          (setter (ht-set-lambda tbl)))
     (funcall setter "key" "val")
-    (should (equal "val" (ht-get tbl "key")))))
+    (should (equal "val" (map-elt tbl "key")))))
 
 (ert-deftest xtdlib/ht-contains-p-lambda-found ()
   (let* ((tbl (make-hash-table :test #'equal))
          (pred (ht-contains-p-lambda tbl)))
-    (ht-set tbl "key" "val")
+    (setf (map-elt tbl "key") "val")
     (should (funcall pred "key"))))
 
 (ert-deftest xtdlib/ht-contains-p-lambda-not-found ()
@@ -831,19 +831,6 @@
   (should (equal "foo-bar" (s-normalize-symbol-name "  foo bar  "))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; -distinct-paths
-
-(ert-deftest xtdlib/-distinct-paths-removes-duplicates ()
-  (should (equal 1 (length (-distinct-paths (list "/tmp/foo" "/tmp/foo"))))))
-
-(ert-deftest xtdlib/-distinct-paths-preserves-unique-paths ()
-  (let ((paths (list "/tmp/foo" "/tmp/bar")))
-    (should (equal 2 (length (-distinct-paths paths))))))
-
-(ert-deftest xtdlib/-distinct-paths-empty-list ()
-  (should (null (-distinct-paths nil))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; -distinct-by-alist-key
 
 (ert-deftest xtdlib/-distinct-by-alist-key-removes-duplicate-key-values ()
@@ -961,7 +948,7 @@
 (ert-deftest xtdlib/ht-make-named-table-creates-variable ()
   (ht-make-named-table xtdlib--test-ht-table)
   (should (boundp 'xtdlib--test-ht-table))
-  (should (ht-p xtdlib--test-ht-table)))
+  (should (hash-table-p xtdlib--test-ht-table)))
 
 (ert-deftest xtdlib/ht-make-named-table-generates-get-function ()
   (ht-make-named-table xtdlib--test-ht-get)
@@ -1247,6 +1234,12 @@ missing its lexical-binding cookie and crashed the Emacs daemon at startup."
 
 (ert-deftest xtdlib/f-distinct-preserves-unique-paths ()
   (should (= 2 (length (f-distinct (list "/tmp/foo" "/tmp/bar"))))))
+
+(ert-deftest xtdlib/f-distinct-empty-list ()
+  (should (null (f-distinct nil))))
+
+(ert-deftest xtdlib/f-distinct-paths-is-an-alias-for-f-distinct ()
+  (should (eq (indirect-function 'f-distinct-paths) (indirect-function 'f-distinct))))
 
 (ert-deftest xtdlib/f-files-in-directory-returns-files ()
   (let ((dir (make-temp-file "xtdlib-test-dir-" t)))

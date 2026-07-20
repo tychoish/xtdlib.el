@@ -2,7 +2,7 @@
 #+OPTIONS: toc:2 num:nil
 
 * Overview
-Extensions and additions for [[https://github.com/rejeep/f.el][f.el]], [[https://github.com/magnars/s.el][s.el]], [[https://github.com/Wilfred/ht.el][ht.el]], and [[https://github.com/magnars/dash.el][dash.el]], plus utility macros and functions for hooks and hooks to support common patterns and improved code ergonomics.
+Extensions and additions for [[https://github.com/rejeep/f.el][f.el]] and [[https://github.com/magnars/s.el][s.el]], plus [[https://github.com/Wilfred/ht.el][ht.el]]- and [[https://github.com/magnars/dash.el][dash.el]]-style list/table helpers (implemented on built-in ~map.el~/~seq.el~, with no real dependency on those two packages), and utility macros and functions for hooks to support common patterns and improved code ergonomics.
 * Contents                                                       :TOC:
 - [[#overview][Overview]]
 - [[#installation][Installation]]
@@ -227,12 +227,6 @@ Return a lambda that appends ITEM to LIST via ‘add-to-list’. LIST may be a b
 
 Take a list of cons cells and return a new list that contains only the elements that have unique car values, ignoring the cdr entirely. Compare values using the test function, which defaults to ‘equal’.
 
-*** ~-distinct-paths~
-
-: (fn CELL)
-
-Return CELL with duplicate file paths removed, using ‘f-equal-p’ for comparison. Unlike ‘-distinct’, this handles paths that differ only in trailing slashes or relative vs. absolute form when the filesystem resolves them to the same location.
-
 *** ~-distinct-by-alist-key~
 
 : (fn KEY CELL &optional &key (TEST #'equal))
@@ -437,7 +431,7 @@ Return PATH if it exists on the filesystem, otherwise nil.
 
 : (fn SEQUENCE)
 
-Return SEQUENCE with duplicate paths removed using ‘f-equal-p’ for comparison.
+Return SEQUENCE with duplicate paths removed using ‘f-equal-p’ for comparison. Handles paths that differ only in trailing slashes or relative vs. absolute form when the filesystem resolves them to the same location. ‘f-distinct-paths’ is an alias for this function.
 
 *** ~f-directories-containing-file-with-extension-function~
 

@@ -3,10 +3,9 @@
 (source nongnu)
 
 (package-file "xtdlib.el")
+(files "xtdlib.el" "xtd-s.el" "xtd-f.el" "xtd-ht.el" "xtd-dash.el" "xtd-macro.el" "xtd-project.el")
 
 (development
- (depends-on "dash")
  (depends-on "f")
  (depends-on "s")
- (depends-on "ht")
  (depends-on "ert-runner"))
