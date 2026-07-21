@@ -113,12 +113,15 @@ hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces."
   "Replace runs of three or more consecutive hyphens in STR with a single hyphen."
   (replace-regexp-in-string "-\\{3,\\}" "-" str))
 
+(defconst xtdlib--symbol-name-punctuation '("=" "_" " " "'" "\"" "\\" "/")
+  "Characters `s-normalize-symbol-name' replaces with a hyphen.")
+
 (defun s-normalize-symbol-name (name)
   "Normalize NAME to a clean hyphen-separated string suitable for use as a symbol name.
 Trims outer whitespace, collapses internal whitespace, replaces common punctuation
 with hyphens, and collapses runs of three or more hyphens."
   (let* ((sanatized (string-trim (replace-regexp-in-string "[ \t\n\r]+" " " name)))
-	 (canonicalized (s-replace-all (mapcar (lambda (it) (cons it "-")) '("=" "_" " " "_" "'" "\"" "\\" "/")) sanatized)))
+	 (canonicalized (s-replace-all (seq-map (lambda (char) (cons char "-")) xtdlib--symbol-name-punctuation) sanatized)))
     (s-collapse-hyphens canonicalized)))
 
 (defun s-trimmed-or-nil (value)

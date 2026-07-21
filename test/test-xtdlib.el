@@ -1073,6 +1073,11 @@
 (ert-deftest xtdlib/make-read-extended-command-for-prefix-predicate-rejects ()
   (should-not (read-extended-command-for-xtdlib-test-prefix-p 'other-command nil)))
 
+(ert-deftest xtdlib/make-read-extended-command-for-prefix-default-key-alias-includes-prefix ()
+  (let ((expansion (format "%S" (macroexpand-1
+                                  '(make-read-extended-command-for-prefix "sample-prefix" :bind-key "s-s")))))
+    (should (string-match-p "\"sample-prefix-commands\"" expansion))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; add-one-shot-hook: extended coverage
 
@@ -1209,6 +1214,37 @@ missing its lexical-binding cookie and crashed the Emacs daemon at startup."
   (let ((pred (merge-predicate-functions numberp)))
     (should (funcall pred 42))
     (should-not (funcall pred "x"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; build-symbol-name
+
+(ert-deftest xtdlib/build-symbol-name-joins-clean-parts ()
+  (should (equal "foo-bar" (build-symbol-name "foo" "bar"))))
+
+(ert-deftest xtdlib/build-symbol-name-filters-non-strings-and-empties ()
+  (should (equal "foo-bar" (build-symbol-name "foo" nil "" "bar"))))
+
+(ert-deftest xtdlib/build-symbol-name-no-args-returns-empty-string ()
+  (should (equal "" (build-symbol-name))))
+
+(ert-deftest xtdlib/build-symbol-name-normalizes-whitespace-and-punctuation ()
+  (should (equal "hello-world" (build-symbol-name "hello world")))
+  (should (equal "foo-bar" (build-symbol-name "foo=bar")))
+  (should (equal "foo-bar" (build-symbol-name "foo/bar")))
+  (should (equal "foo-bar" (build-symbol-name "foo   bar")))
+  (should (equal "foo-bar" (build-symbol-name "foo-bar")))
+  (should (equal "foo-bar" (build-symbol-name "  foo bar  "))))
+
+(ert-deftest xtdlib/build-symbol-name-collapses-three-or-more-hyphens ()
+  (should (equal "foo-bar" (build-symbol-name "foo---bar")))
+  (should (equal "foo-bar" (build-symbol-name "foo-" "--bar"))))
+
+(ert-deftest xtdlib/build-symbol-name-preserves-a-parts-own-double-hyphen ()
+  ;; a private-symbol "--" inside a single part is punctuation-replacement's
+  ;; job, not the final collapse's (which only fires on runs of three or
+  ;; more), so it survives untouched.
+  (should (equal "turn-on-builder--cache-bypass"
+                 (build-symbol-name "turn-on" "builder--cache-bypass" nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; f extensions: filesystem functions
