@@ -35,8 +35,7 @@
 (declare-function which-key-add-keymap-based-replacements "which-key")
 
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'bind-key))
+  (require 'cl-lib))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -89,16 +88,29 @@ Turns `with-slow-op-timer' from a noop to reporting on the duration of enclosed 
 
 (defalias 'pa 'pos-arg)
 
-(cl-defmacro add-lazy-init (&key name operation (delay 1))
-  (unless operation
-    (user-error "cannot specify lazy-init without a function or symbol"))
-  (when (and (stringp operation) (not (string-empty-p operation))
-	     (intern-soft operation))
-    (setq operation (intern operation)))
+(defun xtd--resolve-hooks (hook)
+  "Resolve HOOK to a list of hook variable symbols.
+HOOK may be a symbol, a list of symbols, or the sentinel
+`after-first-frame-created'. The sentinel is decided here, at the time
+the hook is actually registered/removed, rather than baked in by
+whichever process happened to macro-expand the call site -- so it still
+gives the right answer when the call site was compiled by an async
+native-compilation subprocess (not a daemon) but runs in the daemon."
+  (let ((hook (if (eq hook 'after-first-frame-created)
+		  (if (daemonp)
+		      'server-after-make-frame-hook
+		    'window-setup-hook)
+		hook)))
+    (cond ((symbolp hook)
+	   (list hook))
+	  ((and (listp hook) (seq-every-p #'symbolp hook))
+	   hook)
+	  (:else
+	   (user-error "must have a symbol, list of symbols, or `after-first-frame-created' for hook: %S" hook)))))
 
-  (unless (and name (stringp name) (not (string-empty-p (string-trim name)))
-	       (not (symbolp operation)))
-    (setq name (format "<lazy> %s" (symbol-name operation))))
+(cl-defmacro add-lazy-init (&key name operation (delay 1))
+  (unless (and name operation)
+    (user-error "add-lazy-init requires :name and :operation"))
   `(run-with-idle-timer
     ,delay nil
     (lambda ()
@@ -120,11 +132,14 @@ runs in an idle timer of that many seconds rather than directly in the hook.
 
 HOOK may be a symbol, a list of symbols, or the special sentinel
 `after-first-frame-created', which routes to `window-setup-hook' in non-daemon
-sessions and `server-after-make-frame-hook' in daemon sessions.
+sessions and `server-after-make-frame-hook' in daemon sessions. This is
+resolved at call time via `xtd--resolve-hooks', not at macro-expansion time.
 
 DEPTH controls hook insertion depth (default 0). LOCAL makes the hook
 buffer-local. MAKE-UNIQUE generates an uninterned symbol to avoid name
 collisions. CLEANUP uninterns the generated symbol after the hook fires."
+  (unless hook
+    (user-error "add-one-shot-hook requires :hook"))
   (let* ((unique-tag (or (when make-unique (gensym "hook-"))
 			 (make-symbol "hook")))
 	 (count-tag (cond (persist "perpeutal")
@@ -132,88 +147,76 @@ collisions. CLEANUP uninterns the generated symbol after the hook fires."
 			  ((eq count 1) "one-shot")
 			  (:else (format "run-%d-times" count))))
 	 (cleanup-symbol (intern (build-symbol-name "one-shot" count-tag name (symbol-name unique-tag))))
-	 hooks)
+	 ;; a bare symbol is the "use this hook variable literally" calling
+	 ;; convention (e.g. :hook find-file-hook); anything else -- an
+	 ;; already-quoted symbol/list, or an arbitrary expression -- is
+	 ;; spliced through as-is and evaluated normally at call time.
+	 (hook-form (if (symbolp hook) `',hook hook))
+	 ;; a safe-to-print stand-in for the docstring below: unwrap a top-level
+	 ;; `quote', pass a plain symbol/symbol-list through, or fall back to a
+	 ;; placeholder for anything else. Printing an arbitrary HOOK expression
+	 ;; via %S can embed nested `(quote foo)' forms, which the printer
+	 ;; renders as "'foo" -- and that apostrophe trips the byte-compiler's
+	 ;; docstring-quoting check.
+	 (hook-display (cond ((and (consp hook) (eq (car hook) 'quote))
+			      (cadr hook))
+			     ((or (symbolp hook) (seq-every-p #'symbolp hook))
+			      hook)
+			     (:else
+			      "a computed hook expression")))
+	 (timer-name (format "<one-shot-hook> %s" name))
+	 (call-args (seq-remove (lambda (arg) (memq arg '(&optional &rest))) args))
+	 (resolved-form
+	  (or (cond (form
+		     form)
+		    (body
+		     `,@body)
+		    (result
+		     `,(eval result))
+		    (operation
+		     (if args
+			 `(funcall ,operation ,@call-args)
+		       `(funcall ,operation)))
+		    ((symbolp function)
+		     (if args
+			 `(funcall ',function ,@call-args)
+		       `(funcall ',function)))
+		    ((listp function)
+		     function))
+	      (user-error "could not resolve the hook function from input for %s" name)))
+	 (cleanup-expr
+	  (if (or make-unique cleanup)
+	      `(unintern ',cleanup-symbol obarray)
+	    t))
+	 (run-count-var (intern (concat (symbol-name cleanup-symbol) "--run-count"))))
 
-    (when (or (eq hook 'after-first-frame-created)
-              (equal hook '(quote after-first-frame-created)))
-      (setq hook (if (daemonp)
-		     'server-after-make-frame-hook
-		   'window-setup-hook)))
+    `(progn
+       (defvar ,run-count-var 0
+	 ,(format "Number of times the one-shot hook function `%s' has fired." cleanup-symbol))
 
-    (when (functionp hook)
-      (setq hook (funcall hook)))
-
-    (when (symbolp hook)
-      (setq hooks (list hook)))
-
-    (when (listp hook)
-      (if (null (seq-remove #'symbolp hook))
-	  (setq hooks hook)
-	(setq hooks (eval hook)))
-      (if (symbolp hooks)
-	  (setq hooks (list hooks))))
-
-    (unless hooks
-      (user-error "must have a symbol, list of symbols or form that evaluates to same for hook [%S]" hooks))
-
-    (let* ((timer-name (format "<one-shot-hook> %s" name))
-	   (filtered-hooks (seq-remove (lambda (hook) (eq 'quote hook)) hooks))
-	   (resolved-form
-	    (or (cond (form
-		       form)
-		      (body
-		       `,@body)
-		      (result
-		       `,(eval result))
-		      (operation
-		       (if args
-			   `(apply ,operation ,args)
-			 `(funcall ,operation)))
-		      ((and (symbolp function) (functionp function))
-		       (if args
-			   `(apply ',function ,args)
-			 `(funcall ',function)))
-		      ((and (functionp function) (listp function))
-		       function)
-		      ((symbolp function)
-		       (if args
-			   `(apply ',function ,args)
-			 `(funcall ',function)))
-		      ((listp function)
-		       function))
-		(user-error "could not resolve the hook function from input for %s" name)))
-	   (remove-hook-forms
-	    (seq-map (lambda (hook) `(remove-hook ',hook ',cleanup-symbol ,local)) filtered-hooks))
-	   (cleanup-expr
-	    (if (or make-unique cleanup)
-		`(unintern ',cleanup-symbol obarray)
-	      t))
-	   (run-count-var (intern (concat (symbol-name cleanup-symbol) "--run-count"))))
-
-      `(progn
-	 (defvar ,run-count-var 0
-	   ,(format "Number of times the one-shot hook function `%s' has fired." cleanup-symbol))
-
-	 (defun ,cleanup-symbol ,args
-	   ,(format "Self-removing hook function for `%s', registered on %S.
+       (defun ,cleanup-symbol ,args
+	 ,(format "Self-removing hook function for `%s', registered on %S.
 Generated by `add-one-shot-hook'; removes itself from the hook after
-%s." name filtered-hooks (if (eq count 1) "one run" (format "%d runs" count)))
-	   ,@(if idle-timer
-		 `((run-with-idle-timer ,idle-timer nil
-					(lambda ()
-					  (with-slow-op-timer ,timer-name ,resolved-form)))
-		   (cl-incf ,run-count-var)
-		   (when (and (not ,persist) (>= ,run-count-var ,count))
-		     ,@remove-hook-forms
-		     ,cleanup-expr))
-	       `((with-slow-op-timer ,timer-name
-		   ,resolved-form
-		   (cl-incf ,run-count-var)
-		   (when (and (not ,persist) (>= ,run-count-var ,count))
-		     ,@remove-hook-forms
-		     ,cleanup-expr)))))
+%s." name hook-display (if (eq count 1) "one run" (format "%d runs" count)))
+	 ,@(if idle-timer
+	       `((run-with-idle-timer ,idle-timer nil
+				      (lambda ()
+					(with-slow-op-timer ,timer-name ,resolved-form)))
+		 (cl-incf ,run-count-var)
+		 (when (and (not ,persist) (>= ,run-count-var ,count))
+		   (seq-do (lambda (h) (remove-hook h ',cleanup-symbol ,local))
+			   (xtd--resolve-hooks ,hook-form))
+		   ,cleanup-expr))
+	     `((with-slow-op-timer ,timer-name
+		 ,resolved-form
+		 (cl-incf ,run-count-var)
+		 (when (and (not ,persist) (>= ,run-count-var ,count))
+		   (seq-do (lambda (h) (remove-hook h ',cleanup-symbol ,local))
+			   (xtd--resolve-hooks ,hook-form))
+		   ,cleanup-expr)))))
 
-	 ,@(seq-map (lambda (hook) `(add-hook ',hook ',cleanup-symbol ,depth ,local)) filtered-hooks)))))
+       (seq-do (lambda (h) (add-hook h ',cleanup-symbol ,depth ,local))
+	       (xtd--resolve-hooks ,hook-form)))))
 
 (defmacro make-run-hooks-function-for (mode)
   "Define a zero-argument function `run-hooks-for-MODE' that runs `MODE-hook'."
@@ -244,7 +247,7 @@ Optionally bind the toggle to KEY in KEYMAP."
 				   (,setter ,value ,(cadr op))))
 		  ops)
        ,(when keymap
-	  `(bind-key ,key ',(car (nth 2 ops)) ,keymap)))))
+	  `(keymap-set ,keymap ,key #',(car (nth 2 ops)))))))
 
 (cl-defmacro make-read-extended-command-for-prefix (prefix &optional &key bind-map bind-key key-alias)
   "Define an interactive command that runs `execute-extended-command' filtered to PREFIX.
@@ -255,12 +258,7 @@ Optionally bind the command to BIND-KEY in BIND-MAP with KEY-ALIAS as the which-
 				   (trimmed (string-trim prefix))
 				   (_ (not (string-empty-p trimmed))))
 			    trimmed))
-
     (user-error "cannot build predicate function for '%s'" prefix))
-  (unless key-alias
-    (setq key-alias (build-symbol-name prefix "commands")))
-
-  (setq prefix (build-symbol-name prefix))
 
   (let* ((predicate-name (format "read-extended-command-for-%s-prefix-p" prefix))
 	 (predicate-symbol (intern predicate-name))
@@ -279,9 +277,7 @@ Optionally bind the command to BIND-KEY in BIND-MAP with KEY-ALIAS as the which-
 	 (string-prefix-p ,prefix (symbol-name command)))
        ,(when bind-key
 	  `(progn
-	     (bind-keys
-	      :map ,(or bind-map 'global-map)
-	      (,bind-key . ,user-command-symbol))
+	     (keymap-set ,(or bind-map 'global-map) ,bind-key #',user-command-symbol)
 	     ,(when key-alias
 		`(which-key-add-keymap-based-replacements ,(or bind-map 'global-map) ,bind-key ,key-alias)))))))
 

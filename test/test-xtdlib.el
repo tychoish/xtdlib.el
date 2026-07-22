@@ -1195,6 +1195,80 @@ missing its lexical-binding cookie and crashed the Emacs daemon at startup."
     (should (= 2 xtdlib--test-no-lexical-fire-count))
     (should-not xtdlib--test-hook-var)))
 
+(defvar xtdlib--test-operation-args-seen nil)
+
+(defun xtdlib--test-operation-args-record (a b)
+  (setq xtdlib--test-operation-args-seen (list a b)))
+
+(ert-deftest xtdlib/add-one-shot-hook-operation-with-args-calls-with-values ()
+  "Regression test: :operation combined with :args used to splice the ARGS
+lambda-list directly into `apply' (e.g. `(apply operation (a b))'), which
+calls the lambda-list's first parameter as a function instead of forwarding
+the runtime argument values. It must instead funcall OPERATION with the
+bound parameter values."
+  (setq xtdlib--test-hook-var nil
+        xtdlib--test-operation-args-seen nil)
+  (add-one-shot-hook
+   :name "xtdlib-test-operation-args"
+   :hook 'xtdlib--test-hook-var
+   :args (a b)
+   :operation #'xtdlib--test-operation-args-record)
+  (funcall (car (symbol-value 'xtdlib--test-hook-var)) 1 2)
+  (should (equal '(1 2) xtdlib--test-operation-args-seen)))
+
+(ert-deftest xtdlib/add-one-shot-hook-function-symbol-with-args-calls-with-values ()
+  "Same regression as above, via the :function (symbol) path."
+  (setq xtdlib--test-hook-var nil
+        xtdlib--test-operation-args-seen nil)
+  (add-one-shot-hook
+   :name "xtdlib-test-function-args"
+   :hook 'xtdlib--test-hook-var
+   :args (a b)
+   :function xtdlib--test-operation-args-record)
+  (funcall (car (symbol-value 'xtdlib--test-hook-var)) 3 4)
+  (should (equal '(3 4) xtdlib--test-operation-args-seen)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; xtd--resolve-hooks
+
+(ert-deftest xtdlib/resolve-hooks-single-symbol ()
+  (should (equal '(xtdlib--test-hook-var) (xtd--resolve-hooks 'xtdlib--test-hook-var))))
+
+(ert-deftest xtdlib/resolve-hooks-list-of-symbols ()
+  (should (equal '(xtdlib--test-hook-a xtdlib--test-hook-b)
+                 (xtd--resolve-hooks '(xtdlib--test-hook-a xtdlib--test-hook-b)))))
+
+(ert-deftest xtdlib/resolve-hooks-after-first-frame-created-routes-by-daemonp ()
+  (should (equal (list (if (daemonp) 'server-after-make-frame-hook 'window-setup-hook))
+                 (xtd--resolve-hooks 'after-first-frame-created))))
+
+(ert-deftest xtdlib/resolve-hooks-rejects-invalid-value ()
+  (should-error (xtd--resolve-hooks 42) :type 'user-error))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; add-lazy-init
+
+(ert-deftest xtdlib/add-lazy-init-uses-given-name-and-calls-operation ()
+  (let (scheduled captured-message called)
+    (cl-letf (((symbol-function 'run-with-idle-timer)
+               (lambda (_delay _repeat fn &rest _args) (setq scheduled fn)))
+              ((symbol-function 'message)
+               (lambda (fmt &rest args) (setq captured-message (apply #'format fmt args))))
+              (slow-op-reporting t)
+              (slow-op-threshold -1))
+      (add-lazy-init :name "explicit-name" :operation (lambda () (setq called t)) :delay 5)
+      (funcall scheduled))
+    (should called)
+    (should (string-match-p "explicit-name" captured-message))))
+
+(ert-deftest xtdlib/add-lazy-init-requires-name ()
+  (should-error (macroexpand-1 '(add-lazy-init :operation ignore :delay 5))
+                :type 'user-error))
+
+(ert-deftest xtdlib/add-lazy-init-requires-operation ()
+  (should-error (macroexpand-1 '(add-lazy-init :name "x" :delay 5))
+                :type 'user-error))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; merge-predicate-functions
 
