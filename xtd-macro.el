@@ -53,12 +53,12 @@ Turns `with-slow-op-timer' from a noop to reporting on the duration of enclosed 
   (declare (indent defun) (debug t))
   `(if (not slow-op-reporting)
        (progn ,@body)
-     (let* ((inhibit-message t)
-	    (time (current-time))
-	    (return-value (progn ,@body))
+     (let* ((time (current-time))
+	    (return-value (let ((inhibit-message t)) ,@body))
 	    (duration (time-to-seconds (time-since time))))
        (when (> duration slow-op-threshold)
-	 (message "[op]: %s: %.06fs" ,name duration))
+	 (let (inhibit-message)
+	   (message "[op]: %s: %.06fs" ,name duration)))
        return-value)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
