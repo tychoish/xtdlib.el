@@ -48,18 +48,21 @@
 
 ;; project context -- lightweight wrappers over projectile / project.el
 
+;;;###autoload
 (defun buffer-derived-mode-p (buffer mode)
   "Returns t when the major-mode of `buffer' is or is derived from `mode.'"
   (with-current-buffer buffer
     (when (derived-mode-p mode)
       t)))
 
+;;;###autoload
 (cl-defun mode-buffers-for-project (&optional &key (mode major-mode))
   "Return buffers in the current project whose major mode derives from MODE.
 MODE defaults to `major-mode' of the calling buffer. Uses `approximate-project-buffers'
 to determine project membership."
   (seq-filter (lambda (it) (buffer-derived-mode-p it mode)) (approximate-project-buffers)))
 
+;;;###autoload
 (cl-defun mode-buffers (&optional (mode major-mode))
   "Return all live buffers whose major mode derives from MODE.
 MODE defaults to `major-mode' of the calling buffer. Searches across all buffers,
@@ -70,6 +73,8 @@ not just the current project."
 		  (current-buffer))))
 	    (buffer-list)))
 
+
+;;;###autoload
 (defun approximate-project-root ()
   "Return the current project root, falling back to `default-directory'."
   (or (when (featurep 'projectile)
@@ -78,6 +83,7 @@ not just the current project."
         (project-root (project-current)))
       (expand-file-name default-directory)))
 
+;;;###autoload
 (defun approximate-project-name ()
   "Return the current project name, falling back to the directory basename."
   (s-trim-non-word-chars
@@ -88,6 +94,7 @@ not just the current project."
           (directory-file-name (project-root (project-current)))))
        (file-name-nondirectory (directory-file-name (expand-file-name default-directory))))))
 
+;;;###autoload
 (defun approximate-project-buffers ()
   "Return buffers belonging to the current project."
   (or (when (featurep 'projectile)
