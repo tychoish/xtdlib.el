@@ -536,8 +536,6 @@ Return t when VALUE is a string that is empty or consists entirely of whitespace
 
 Return DEFAULT when INPUT is nil or an empty string, otherwise return INPUT.
 
-
-
 * License
 
 Copyright (C) tychoish. GPL-3.0 or later. See the source file header

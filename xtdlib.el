@@ -40,8 +40,7 @@
 ;;                    built on `map.el' (no real `ht' dependency)
 ;; - `xtd-dash'    -- list helpers in the style of `dash.el' (no dependency on the others)
 ;; - `xtd-macro'   -- general-purpose macros: hooks, timers, toggles, keymaps (depends on `xtd-s')
-;; - `xtd-project' -- project-context wrappers over `projectile'/`project.el' (depends on `xtd-s')
-;;
+;; - `xtd-project'   -- project-context wrappers over `projectile'/`project.el' (depends on `xtd-s')
 ;; None of the modules above require `xtdlib' itself, so there is no
 ;; require cycle between them or with this file. `f' and `s' are listed
 ;; in `Package-Requires' as the package's overall transitive
@@ -57,6 +56,5 @@
 (require 'xtd-ht)
 (require 'xtd-macro)
 (require 'xtd-project)
-
 (provide 'xtdlib)
 ;;; xtdlib.el ends here

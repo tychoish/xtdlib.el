@@ -968,6 +968,7 @@
   (should (equal "value" (ht-xtdlib--test-ht-roundtrip-get "key"))))
 
 (ert-deftest xtdlib/ht-make-named-table-contains-p-after-set ()
+  (setq xtdlib--test-ht-cpset (make-hash-table :test 'equal))
   (ht-make-named-table xtdlib--test-ht-cpset)
   (should-not (ht-xtdlib--test-ht-cpset-contains-p "k"))
   (ht-xtdlib--test-ht-cpset-set "k" t)
