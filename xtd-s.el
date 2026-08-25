@@ -180,3 +180,7 @@ Use this to guard against blank user input or empty configuration values."
 
 (provide 'xtd-s)
 ;;; xtd-s.el ends here
+
+;; Local Variables:
+;; package-lint--sane-prefixes: "^s-"
+;; End:

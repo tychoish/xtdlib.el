@@ -3,7 +3,7 @@
 ;; Author: sam kleinman (tychoish)
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "29.4"))
-;; Keywords: utility, library, elisp.
+;; Keywords: extensions, maint
 ;; URL: https://github.com/tychoish/xtdlib.el
 
 ;; This file is not part of GNU Emacs
@@ -239,3 +239,7 @@ Empty strings and strings that are entirely whitespace are excluded from the res
 
 (provide 'xtd-dash)
 ;;; xtd-dash.el ends here
+
+;; Local Variables:
+;; package-lint--sane-prefixes: "^-"
+;; End:

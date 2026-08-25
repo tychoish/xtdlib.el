@@ -3,7 +3,7 @@
 ;; Author: sam kleinman (tychoish)
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "29.4") (f "0.20"))
-;; Keywords: utility, library, elisp.
+;; Keywords: maint, extensions
 ;; URL: https://github.com/tychoish/xtdlib.el
 
 ;; This file is not part of GNU Emacs
@@ -169,3 +169,7 @@ Also accepts additional FILES as alternate names to match."
 
 (provide 'xtd-f)
 ;;; xtd-f.el ends here
+
+;; Local Variables:
+;; package-lint--sane-prefixes: "^f-"
+;; End:
