@@ -12,14 +12,14 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: silex/emacs:${{ matrix.emacs_version }}-ci-cask
+    container: silex/emacs:${{ matrix.emacs-version }}-ci
     timeout-minutes: 5
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        emacs_version:
+        emacs-version:
           - "29.4"
           - "30.2"
     env:
@@ -27,5 +27,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - run: cask install
-      - run: cask exec ert-runner test/*.el
+
+      - name: Run Tests
+        uses: tychoish/elisp-ci@v0.1.0
