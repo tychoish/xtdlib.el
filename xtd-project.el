@@ -58,15 +58,15 @@
 ;;;###autoload
 (cl-defun mode-buffers-for-project (&optional &key (mode major-mode))
   "Return buffers in the current project whose major mode derives from MODE.
-MODE defaults to `major-mode' of the calling buffer. Uses `approximate-project-buffers'
-to determine project membership."
+MODE defaults to `major-mode' of calling buffer.
+Uses `approximate-project-buffers' to determine project membership."
   (seq-filter (lambda (it) (buffer-derived-mode-p it mode)) (approximate-project-buffers)))
 
 ;;;###autoload
 (cl-defun mode-buffers (&optional (mode major-mode))
   "Return all live buffers whose major mode derives from MODE.
-MODE defaults to `major-mode' of the calling buffer. Searches across all buffers,
-not just the current project."
+MODE defaults to `major-mode' of calling buffer.
+Searches across all buffers, not just the current project."
   (seq-keep (lambda (it)
 	      (with-current-buffer it
 		(when (derived-mode-p mode)
@@ -113,8 +113,8 @@ not just the current project."
 ;; misc
 
 (defun compile-buffer-name (name)
-  "Return a function suitable for `compilation-buffer-name-function' that always returns NAME.
-The returned function accepts one optional argument (the compilation mode) and ignores it."
+  "Return a function for `compilation-buffer-name-function' returning NAME.
+The returned function accepts one optional mode argument and ignores it."
   (lambda (&optional _) name))
 
 (provide 'xtd-project)

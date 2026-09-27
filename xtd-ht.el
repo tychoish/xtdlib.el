@@ -75,7 +75,7 @@
 
 (cl-defmacro ht-make-named-table (name &optional &key (test #'equal))
   "Define a named hash table variable and named accessor functions.
-Creates `ht-NAME-get', `ht-NAME-set', and `ht-NAME-contains-p'. TEST defaults to `equal'."
+Creates `ht-NAME-get', `ht-NAME-set', etc. TEST defaults to `equal'."
   (let ((name (or (when (stringp name) (intern name))
 		  (when (symbolp name) name)
 		  (intern (format "%S" name))))

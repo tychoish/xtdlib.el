@@ -53,7 +53,7 @@
    (t plural)))
 
 (defun s-or-char-equal (char value)
-  "Return t when CHAR equals VALUE, where VALUE may be a character or single-char string."
+  "Return t when CHAR equals VALUE (character or single-char string)."
   (cl-check-type char  character         "char must be a character")
   (cl-check-type value (or string character) "value must be a string or character")
   (if (stringp value)
@@ -73,10 +73,10 @@
     "Alist of (CHAR canonical-name jargon-name) for `s-define-join-string-function'."))
 
 (cl-defmacro s-define-join-string-function (char &optional &key use-jargon-names space-padding)
-  "Define a function `s-join-with-NAME' that joins non-empty strings with CHAR as separator.
-NAME is derived from CHAR via `xtdlib--join-char-names', falling back to the Unicode character
-name. When USE-JARGON-NAMES is non-nil, the alternate jargon name is used (e.g. kebab vs
-hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces."
+  "Define `s-join-with-NAME' joining non-empty strings with CHAR.
+NAME is derived from CHAR via `xtdlib--join-char-names', falling back to
+Unicode character name. When USE-JARGON-NAMES is non-nil, alternate jargon
+is used. When SPACE-PADDING is non-nil, the separator is surrounded by spaces."
   (cl-check-type char character "must create join function using the character to join the strings")
   (let* ((entry (assoc char xtdlib--join-char-names))
          (name (downcase (if entry
@@ -86,7 +86,8 @@ hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces."
 	 (padding (if space-padding " " ""))
 	 (join-with (concat padding (char-to-string char) padding)))
     `(defun ,(intern op-name) (&rest words)
-       ,(format "Joins a variadic sequence of strings with `%s' (%s). When the kwarg `:space-padding',  the join char is padded with space characters on both ends before joining." char name)
+       ,(format "Joins a variadic sequence of strings with `%s' (%s).
+When kwarg `:space-padding', char is padded with space before joining." char name)
        (mapconcat #'identity
 		  (thread-last
 		    words
@@ -117,15 +118,15 @@ hyphen). When SPACE-PADDING is non-nil, the separator is surrounded by spaces."
   "Characters `s-normalize-symbol-name' replaces with a hyphen.")
 
 (defun s-normalize-symbol-name (name)
-  "Normalize NAME to a clean hyphen-separated string suitable for use as a symbol name.
-Trims outer whitespace, collapses internal whitespace, replaces common punctuation
-with hyphens, and collapses runs of three or more hyphens."
+  "Normalize NAME to a hyphen-separated string suitable as symbol name.
+Trims outer whitespace, collapses whitespace, replaces punctuation with
+hyphens, and collapses multiple hyphens."
   (let* ((sanatized (string-trim (replace-regexp-in-string "[ \t\n\r]+" " " name)))
 	 (canonicalized (s-replace-all (seq-map (lambda (char) (cons char "-")) xtdlib--symbol-name-punctuation) sanatized)))
     (s-collapse-hyphens canonicalized)))
 
 (defun s-trimmed-or-nil (value)
-  "Return VALUE trimmed of surrounding whitespace, or nil if VALUE is not a string or is empty after trimming."
+  "Return VALUE trimmed of whitespace, or nil if empty/non-string."
   (and (stringp value)
        (unless (string-empty-p (setq value (string-trim value))) value)
        value))
@@ -138,9 +139,9 @@ Return nil if VALUE is not a string or is empty after trimming."
        value))
 
 (defun s-blank-p (value)
-  "Return t when VALUE is a string that is empty or consists entirely of whitespace.
-Returns nil for non-strings, non-empty strings, and strings with non-whitespace content.
-Use this to guard against blank user input or empty configuration values."
+  "Return t when VALUE is a string that is empty or entirely whitespace.
+Returns nil for non-strings or non-blank strings.
+Use this to guard against blank user input or empty configurations."
   (and (stringp value)
        (string-empty-p (string-trim value))))
 

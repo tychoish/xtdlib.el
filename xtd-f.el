@@ -72,7 +72,7 @@ form when the filesystem resolves them to the same location."
 (defalias 'f-distinct-paths #'f-distinct)
 
 (defmacro f-directories-containing-file-with-extension-function (extension)
-  "Define `f-EXT-file-p' and `f-directories-containing-file-with-extension-EXT' for EXTENSION."
+  "Define `f-EXT-file-p' and extension search helper for EXTENSION."
   (when (string-prefix-p "." extension)
     (setq extension (string-trim-left extension "^\\.")))
 
@@ -108,7 +108,7 @@ Searches recursively. PATH defaults to `default-directory' when nil."
     (seq-map #'f-dirname)))
 
 (defmacro f-directories-containing-file-function (filename &rest files)
-  "Define helper predicates and a search function for directories containing FILENAME.
+  "Define helper predicates and directory search helper for FILENAME.
 Also accepts additional FILES as alternate names to match."
   (let* ((filenames (cons filename files))
 	 (symbol-filename (string-replace "." "-" (downcase filename)))
@@ -141,7 +141,7 @@ Also accepts additional FILES as alternate names to match."
   (string-replace (expand-file-name "~/") "~/" path))
 
 (defun f-visually-compress-path (num path)
-  "Truncate each component of PATH to at most NUM characters, preserving the separator."
+  "Truncate each component of PATH to at most NUM characters."
   (mapconcat #'identity
 	     (thread-last
 	       (f-split path)
@@ -152,7 +152,7 @@ Also accepts additional FILES as alternate names to match."
 	     (f-path-separator)))
 
 (defmacro f-visual-compression-function (num)
-  "Define `f-visually-compress-to-NAME' that truncates each path component to NUM characters."
+  "Define helper that truncates each path component to NUM characters."
   `(defun ,(intern (concat "f-visually-compress-to-" (s-number-word num))) (path)
      (f-visually-compress-path ,num path)))
 

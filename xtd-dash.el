@@ -44,14 +44,14 @@
 ;; lists -- helpers, mostly a-la dash.el
 
 (defun larger (&optional first second)
-  "Return the larger value. If either FIRST or SECOND are not numbers, treat them as 0."
+  "Return the larger value. If arguments are not numbers, treat them as 0."
   (if (> (setq first (if (numberp first) first 0))
 	 (setq second (if (numberp second) second 0)))
       first
     second))
 
 (defun smaller (&optional first second)
-  "Return the smaller value. If either FIRST or SECOND are not numbers, treat them as 0."
+  "Return the smaller value. If arguments are not numbers, treat them as 0."
   (if (< (setq first (if (numberp first) first 0))
 	 (setq second (if (numberp second) second 0)))
       first
@@ -82,8 +82,8 @@ test function, which defaults to `equal'."
   (seq-uniq cell (lambda (a b) (funcall test (alist-get key a) (alist-get key b)))))
 
 (defun -unwind (list)
-  "Flatten LIST by exactly one level, collecting nested list items into a single list.
-Unlike `-flatten', which recurses fully, `-unwind' only removes one layer of nesting."
+  "Flatten LIST by exactly one level.
+Unlike `-flatten', which recurses fully, `-unwind' removes one nesting layer."
   (apply #'append list))
 
 (defalias '-flat-map #'mapcan
@@ -141,9 +141,9 @@ returning the list. This is a destructive operation."
     output))
 
 (defun -in-place (mapper items)
-  "Destructively apply MAPPER to every item in ITEMS, replacing each element in place.
-Returns the count of elements processed. Use this when you need the element count rather
-than the list itself; prefer `-map-in-place' when you need the modified list back."
+  "Destructively apply MAPPER to every item in ITEMS in place.
+Returns the count of elements processed. Prefer `-map-in-place' when
+you need the modified list back."
   (let ((head items)
 	(count 0))
     (while head
@@ -228,8 +228,8 @@ OPTIONS may be a single symbol or a list of symbols."
       (and (listp options) (memq opt options))))
 
 (defun -filter-s-trim (strs)
-  "Return STRS with non-strings removed and remaining strings trimmed of whitespace.
-Empty strings and strings that are entirely whitespace are excluded from the result."
+  "Return STRS with non-strings removed and strings trimmed of whitespace.
+Empty strings and entirely blank strings are excluded."
   (cl-check-type strs list "strs must be list")
   (thread-last
     strs
