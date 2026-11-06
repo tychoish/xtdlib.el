@@ -1080,6 +1080,16 @@
     (should (string-match-p "\"sample-prefix-commands\"" expansion))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ert-deftest xtdlib/make-read-extended-command-for-prefix-binds-label ()
+  "Bind the generated command with its label in the supplied keymap."
+  (let ((test-map (make-sparse-keymap)))
+    (make-read-extended-command-for-prefix
+     "xtdlib-test" :bind-map test-map :bind-key "C-c x" :key-alias "Test commands")
+    (should (eq (keymap-lookup test-map "C-c x")
+                #'execute-extended-xtdlib-test-command))
+    (should (equal (cdr (assq ?x (cdr (lookup-key test-map (kbd "C-c")))))
+                   '("Test commands" . execute-extended-xtdlib-test-command)))))
+
 ;;; add-one-shot-hook: extended coverage
 
 (defvar xtdlib--test-hook-a nil)
@@ -1271,6 +1281,29 @@ bound parameter values."
                 :type 'user-error))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(ert-deftest xtdlib/add-lazy-init-form-is-deferred ()
+  "Evaluate FORM on the timer, retaining its lexical bindings."
+  (let ((callback nil)
+        (result nil)
+        (value 42))
+    (cl-letf (((symbol-function 'run-with-idle-timer)
+               (lambda (_delay _repeat fn &rest _args) (setq callback fn))))
+      (add-lazy-init :name "form" :form (setq result value))
+      (should-not result)
+      (funcall callback)
+      (should (= result 42)))))
+
+(ert-deftest xtdlib/add-lazy-init-form-takes-precedence ()
+  "FORM takes precedence when OPERATION is supplied too."
+  (let ((callback nil)
+        (result nil))
+    (cl-letf (((symbol-function 'run-with-idle-timer)
+               (lambda (_delay _repeat fn &rest _args) (setq callback fn))))
+      (add-lazy-init :name "both" :form (setq result 'form)
+                     :operation (lambda () (setq result 'operation)))
+      (funcall callback)
+      (should (eq result 'form)))))
+
 ;;; merge-predicate-functions
 
 (ert-deftest xtdlib/merge-predicate-functions-all-pass ()

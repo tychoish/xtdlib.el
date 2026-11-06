@@ -109,14 +109,17 @@ native-compilation subprocess (not a daemon) but runs in the daemon."
 	  (:else
 	   (user-error "must have a symbol, list of symbols, or `after-first-frame-created' for hook: %S" hook)))))
 
-(cl-defmacro add-lazy-init (&key name operation (delay 1))
-  (unless (and name operation)
-    (user-error "add-lazy-init requires :name and :operation"))
+(cl-defmacro add-lazy-init (&key name operation form (delay 1))
+  "Run FORM or OPERATION on an idle timer after DELAY seconds.
+NAME identifies the operation in slow-operation reports.  FORM takes
+precedence over OPERATION when both are supplied."
+  (unless (and name (or form operation))
+    (user-error "add-lazy-init requires :name and :form or :operation"))
   `(run-with-idle-timer
     ,delay nil
     (lambda ()
       (with-slow-op-timer ,name
-	(funcall ,operation)))))
+        ,(or form `(funcall ,operation))))))
 
 (cl-defmacro add-one-shot-hook
     (&key name hook function result body form operation
@@ -143,7 +146,7 @@ collisions. CLEANUP uninterns the generated symbol after the hook fires."
     (user-error "add-one-shot-hook requires :hook"))
   (let* ((unique-tag (or (when make-unique (gensym "hook-"))
 			 (make-symbol "hook")))
-	 (count-tag (cond (persist "perpeutal")
+	 (count-tag (cond (persist "perpetual")
 			  ((not (numberp count)) (user-error "must specify hook limited count as a number %d" count))
 			  ((eq count 1) "one-shot")
 			  (:else (format "run-%d-times" count))))
@@ -277,10 +280,9 @@ Optionally bind to BIND-KEY in BIND-MAP with KEY-ALIAS as which-key label."
 	 ,(format "Predicate to filter commands returning only those starting with `%s'." prefix)
 	 (string-prefix-p ,prefix (symbol-name command)))
        ,(when bind-key
-	  `(progn
-	     (keymap-set ,(or bind-map 'global-map) ,bind-key #',user-command-symbol)
-	     (with-eval-after-load 'which-key
-	       (which-key-add-keymap-based-replacements ,(or bind-map 'global-map) ,bind-key ,(or key-alias (format "%s-commands" prefix)))))))))
+	  `(keymap-set ,(or bind-map 'global-map) ,bind-key
+                       (cons ,(or key-alias (format "%s-commands" prefix))
+                             #',user-command-symbol))))))
 
 (defmacro with-toggle-once (name &rest body)
   "Define a function NAME that executes BODY only the first time it is called.

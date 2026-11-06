@@ -362,7 +362,9 @@ Allow positional arguments to have annotated call-sites.
 
 *** add-lazy-init
 
-: (fn &key NAME OPERATION (DELAY 1))
+: (fn &key NAME OPERATION FORM (DELAY 1))
+
+Run FORM or OPERATION on an idle timer; FORM takes precedence when both are supplied.
 
 *** add-one-shot-hook
 
