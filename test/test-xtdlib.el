@@ -526,23 +526,6 @@
                           "first"
                           "last"))))
 
-(defvar xtdlib--test-logx-called nil)
-
-(ert-deftest xtdlib/with-slow-op-timer-delegates-to-logx-time ()
-  "Verify `with-slow-op-timer' delegates to `logx-time' when fboundp."
-  (let ((xtdlib--test-logx-called nil)
-        (slow-op-reporting t)
-        (slow-op-threshold 0.0))
-    (cl-letf (((symbol-function 'logx-time)
-               (cons 'macro
-                     (lambda (spec &rest body)
-                       `(progn
-                          (setq xtdlib--test-logx-called (plist-get ',spec :msg))
-                          ,@body)))))
-      (let ((res (eval '(with-slow-op-timer "delegated-op" (+ 10 20)))))
-        (should (= res 30))
-        (should (equal xtdlib--test-logx-called "delegated-op"))))))
-
 (ert-deftest xtdlib/with-force-write-allows-insertion-in-read-only-buffer ()
   (with-temp-buffer
     (setq buffer-read-only t)

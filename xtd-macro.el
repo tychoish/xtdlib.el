@@ -49,24 +49,18 @@ When non-nil, `with-slow-op-timer' reports on operation duration.")
   "Threshold in seconds, or fractions thereof, for `with-slow-op-timer'.
 Operations faster than this threshold are ignored to control verbosity.")
 
-(declare-function logx-time "logx")
-
 (defmacro with-slow-op-timer (name &rest body)
-  "Send a message if BODY of NAME takes longer than threshold to execute.
-Delegates to `logx-time' when defined, falling back to message logging."
+  "Send a message if BODY of NAME takes longer than threshold to execute."
   (declare (indent defun) (debug t))
   `(if (not slow-op-reporting)
        (progn ,@body)
-     (if (fboundp 'logx-time)
-         (logx-time (:cat 'op :msg ,name :threshold slow-op-threshold)
-           ,@body)
-       (let* ((time (current-time))
-	      (return-value (let ((inhibit-message t)) ,@body))
-	      (duration (time-to-seconds (time-since time))))
-         (when (> duration slow-op-threshold)
-	   (let ((inhibit-message t))
-	     (message "[op]: %s: %.06fs" ,name duration)))
-         return-value))))
+     (let* ((time (current-time))
+	    (return-value (let ((inhibit-message t)) ,@body))
+	    (duration (time-to-seconds (time-since time))))
+       (when (> duration slow-op-threshold)
+	 (let ((inhibit-message t))
+	   (message "[op]: %s: %.06fs" ,name duration)))
+       return-value)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
