@@ -2,7 +2,7 @@
 
 ;; Author: sam kleinman (tychoish)
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "29.4"))
+;; Package-Requires: ((emacs "29.4") (logx "0.2.0"))
 ;; Keywords: utility, library, elisp.
 ;; URL: https://github.com/tychoish/xtdlib.el
 
@@ -31,6 +31,7 @@
 ;;; Code:
 
 (require 'seq)
+(require 'logx)
 
 (declare-function which-key-add-keymap-based-replacements "which-key")
 
@@ -61,6 +62,20 @@ Operations faster than this threshold are ignored to control verbosity.")
 	 (let ((inhibit-message t))
 	   (message "[op]: %s: %.06fs" ,name duration)))
        return-value)))
+
+(defmacro with-logx-timer (spec &rest body)
+  "Execute BODY, measure elapsed time, and emit structured `logx' telemetry.
+Alias for `logx-time'.
+
+SPEC is either a string/symbol naming the operation, or a plist:
+  :msg       Operation description string.
+  :cat       Category symbol (default \\='op).
+  :level     Log level keyword (default :info).
+  :threshold Minimum duration in seconds to trigger logging (default 0.0).
+  :src       Explicit source coordinates override.
+  Extra keys are included as metadata fields in the log event record."
+  (declare (indent 1) (debug (sexp body)))
+  `(logx-time ,spec ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

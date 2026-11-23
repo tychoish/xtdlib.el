@@ -526,6 +526,24 @@
                           "first"
                           "last"))))
 
+(ert-deftest xtdlib/with-logx-timer-is-available ()
+  "Verify `with-logx-timer' evaluates BODY and returns its value."
+  (should (= (with-logx-timer "math" (+ 2 3)) 5))
+  (should (equal (with-logx-timer (:cat 'test :msg "plist-spec") "res") "res")))
+
+(ert-deftest xtdlib/with-logx-timer-emits-telemetry ()
+  "Verify `with-logx-timer' emits logx event when executed."
+  (let ((received nil))
+    (logx-register-subscriber 'xtdlib-test-sub (lambda (ev) (push ev received)))
+    (unwind-protect
+        (let ((res (with-logx-timer (:cat 'xtd-test :msg "timer-event") (+ 10 20))))
+          (should (= res 30))
+          (should (seq-some (lambda (ev)
+                              (and (eq (plist-get ev :cat) 'xtd-test)
+                                   (string-prefix-p "timer-event in " (plist-get ev :msg))))
+                            received)))
+      (logx-unregister-subscriber 'xtdlib-test-sub))))
+
 (ert-deftest xtdlib/with-force-write-allows-insertion-in-read-only-buffer ()
   (with-temp-buffer
     (setq buffer-read-only t)

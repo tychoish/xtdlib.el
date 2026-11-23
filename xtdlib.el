@@ -2,7 +2,7 @@
 
 ;; Author: sam kleinman (tychoish)
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "29.4") (f "0.20") (s "1.12"))
+;; Package-Requires: ((emacs "29.4") (f "0.20") (s "1.12") (logx "0.2.0"))
 ;; Keywords: utility, library, elisp.
 ;; URL: https://github.com/tychoish/xtdlib.el
 
@@ -39,12 +39,12 @@
 ;; - `xtd-ht'      -- hash-table accessor macros in the style of `ht.el',
 ;;                    built on `map.el' (no real `ht' dependency)
 ;; - `xtd-dash'    -- list helpers in the style of `dash.el' (no dependency on the others)
-;; - `xtd-macro'   -- general-purpose macros: hooks, timers, toggles, keymaps (depends on `xtd-s')
+;; - `xtd-macro'   -- general-purpose macros: hooks, timers, toggles, keymaps (depends on `xtd-s' and `logx')
 ;; - `xtd-project'   -- project-context wrappers over `projectile'/`project.el' (depends on `xtd-s')
 ;; None of the modules above require `xtdlib' itself, so there is no
-;; require cycle between them or with this file. `f' and `s' are listed
+;; require cycle between them or with this file. `f', `s', and `logx' are listed
 ;; in `Package-Requires' as the package's overall transitive
-;; dependencies (needed by `xtd-f' and `xtd-s' respectively), but this
+;; dependencies (needed by `xtd-f', `xtd-s', and `xtd-macro' respectively), but this
 ;; file does not `require' them itself -- it has no code of its own
 ;; that would need them.
 
